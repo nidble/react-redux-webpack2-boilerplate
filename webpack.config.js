@@ -20,14 +20,14 @@ const sourcePath = path.join(__dirname, './source');
 // Common plugins
 const plugins = [
   new SpritePlugin(),
-  new webpack.optimize.CommonsChunkPlugin({
-    name: 'vendor',
-    filename: 'vendor-[hash].js',
-    minChunks(module) {
-      const context = module.context;
-      return context && context.indexOf('node_modules') >= 0;
-    },
-  }),
+  // new webpack.optimize.CommonsChunkPlugin({
+  //   name: 'vendor',
+  //   filename: 'vendor.js',
+  //   minChunks(module) {
+  //     const context = module.context;
+  //     return context && context.indexOf('node_modules') >= 0;
+  //   },
+  // }),
   new webpack.DefinePlugin({
     'process.env': {
       NODE_ENV: JSON.stringify(nodeEnv),
@@ -80,7 +80,7 @@ const rules = [
   {
     test: /\.(png|gif|jpg|svg)$/,
     include: imgPath,
-    use: 'url-loader?limit=20480&name=assets/[name]-[hash].[ext]',
+    use: 'url-loader?limit=20480&name=assets/[name].[ext]',
   },
 ];
 
@@ -104,7 +104,7 @@ if (isProduction) {
         comments: false,
       },
     }),
-    new ExtractTextPlugin('style-[hash].css')
+    new ExtractTextPlugin('style.css')
   );
 
   // Production rules
@@ -148,12 +148,17 @@ module.exports = {
   devtool: isProduction ? false : 'source-map',
   context: jsSourcePath,
   entry: {
-    js: './index.js',
+    js: [
+      'webpack/hot/only-dev-server',
+      'webpack-dev-server/client?http://0.0.0.0:3000/',
+      // 'react-hot-loader/patch',
+      './index.js'
+    ],
   },
   output: {
     path: buildPath,
-    publicPath: '/',
-    filename: 'app-[hash].js',
+    publicPath: 'http://0.0.0.0:3000/',
+    filename: 'app.js',
   },
   module: {
     rules,
@@ -168,6 +173,9 @@ module.exports = {
   plugins,
   devServer: {
     contentBase: isProduction ? buildPath : sourcePath,
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    },
     historyApiFallback: true,
     port: 3000,
     compress: isProduction,
